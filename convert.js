@@ -31,23 +31,6 @@ parser.on("opentag", (node) => {
   currentKey = null;
 });
 
-/**
- * might be unecessary
- * 
- * @param {string} input
- * @returns
- */
-function unescapeUnicode(input) {
-  const unicodeRegEx = /\\u[\dA-Fa-f]{4}/g;
-  if (new RegExp(unicodeRegEx).test(match)) {
-    return;
-  }
-
-  return input.replace(unicodeRegEx, (match) =>
-    String.fromCharCode(parseInt(match.substr(2), 16))
-  );
-}
-
 parser.on("text", (text) => {
   if (currentKey == null) {
     return;
@@ -63,8 +46,7 @@ parser.on("text", (text) => {
     const matches = text.matchAll(/\[\[(.*?)(\|.*?)?\]\]/g);
 
     for (const match of matches) {
-      const unescaped = unescapeUnicode(match[1]);
-      extractedText.push(unescaped);
+      extractedText.push(match[1]);
     }
 
     currentElement.linksTo = extractedText;
