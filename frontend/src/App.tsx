@@ -7,7 +7,6 @@ function App() {
 
   useEffect(() => {
     if (!ref.current) {
-      console.log('hi1')
       return;
     }
 
