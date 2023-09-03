@@ -10,7 +10,7 @@ function App() {
       return;
     }
 
-    const { node, simulation, cleanup } = chart(ref.current);
+    const { cleanup } = chart(ref.current);
 
     return () => {
       cleanup()

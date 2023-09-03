@@ -1,6 +1,24 @@
 import * as d3 from "d3";
 
-const data = {
+type Data = {
+  links: {
+    id: number;
+    source: string;
+    target: string;
+  }[];
+  nodes: {
+    id: string;
+    label: string;
+    vx?: number;
+    vy?: number;
+    x?: number;
+    y?: number;
+    fx?: number | null;
+    fy?: number | null;
+  }[];
+};
+
+const data: Data = {
   links: [
     { id: 1, source: "my article", target: "my article2" },
     { id: 2, source: "my article", target: "my article3" },
@@ -86,34 +104,36 @@ export const chart = (ref: HTMLDivElement) => {
   });
 
   // Reheat the simulation when drag starts, and fix the subject position.
-  function dragstarted(event) {
+  function dragstarted(
+    event: d3.D3DragEvent<SVGCircleElement, unknown, Data["nodes"][number]>
+  ) {
     if (!event.active) simulation.alphaTarget(0.3).restart();
     event.subject.fx = event.subject.x;
     event.subject.fy = event.subject.y;
   }
 
   // Update the subject (dragged node) position during drag.
-  function dragged(event) {
+  function dragged(
+    event: d3.D3DragEvent<SVGCircleElement, unknown, Data["nodes"][number]>
+  ) {
     event.subject.fx = event.x;
     event.subject.fy = event.y;
   }
 
   // Restore the target alpha so the simulation cools after dragging ends.
   // Unfix the subject position now that it’s no longer being dragged.
-  function dragended(event) {
+  function dragended(
+    event: d3.D3DragEvent<SVGCircleElement, unknown, Data["nodes"][number]>
+  ) {
     if (!event.active) simulation.alphaTarget(0);
     event.subject.fx = null;
     event.subject.fy = null;
   }
 
-  // When this cell is re-run, stop the previous simulation. (This doesn’t
-  // really matter since the target alpha is zero and the simulation will
-  // stop naturally, but it’s a good practice.)
-  // invalidation.then(() => simulation.stop());
-
+  // When this is re-run, stop the previous simulation (cleanup)
   return {
     node: svg.node(),
     simulation,
-    cleanup: () => d3.select(ref).selectAll('svg').remove(),
+    cleanup: () => d3.select(ref).selectAll("svg").remove(),
   };
 };
