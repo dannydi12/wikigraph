@@ -6,3 +6,4 @@
 - Then  run `sqlite3 wiki.db`
   - `.import pages.csv pages`
   - `.import links.csv links`
+  - run `CREATE INDEX idx_from_title_id ON links (from_title_id);`
