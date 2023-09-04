@@ -87,6 +87,11 @@ export const chart = (ref: HTMLDivElement) => {
 
   node.append("title").text((d) => d.id);
 
+  // TODO
+  // node.append('p')
+  // .text((d) => d.id)
+  // .style('opacity', 1); // Initially hide labels
+
   // Add a drag behavior.
   node.call(
     d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)
@@ -129,6 +134,21 @@ export const chart = (ref: HTMLDivElement) => {
     event.subject.fx = null;
     event.subject.fy = null;
   }
+
+  // TODO
+  // const handleZoom = (event: d3.D3ZoomEvent<SVGCircleElement, any>) => {
+  //   const { transform } = event;
+
+  //   // Apply zoom transformations to your graph elements
+  //   svg
+  //     .selectAll("circle")
+  //     .attr("cx", (d) => d.x * transform.k)
+  //     .attr("cy", (d) => d.y * transform.k)
+  //     .attr("r", (d) => 5 * transform.k); // Adjust the radius as needed
+
+  //   // Gradually show/hide labels based on zoom level
+  //   svg.selectAll("text").style("opacity", (d) => (transform.k > 1.5 ? 1 : 0)); // Adjust the zoom threshold as needed
+  // };
 
   // When this is re-run, stop the previous simulation (cleanup)
   return {
