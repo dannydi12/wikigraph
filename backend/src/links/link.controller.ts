@@ -15,3 +15,26 @@ export const getLinks = async (req: Request, res: Response, next: NextFunction) 
     next(err)
   }
 }
+
+export const getDeepLinks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { pageTitleId } = req.params
+
+    const links = db
+      .prepare<[string, number]>(`WITH RECURSIVE LinkedDocs AS (
+        SELECT DISTINCT to_title_id, to_title, 0 AS depth
+        FROM links
+        WHERE from_title_id = ?
+        UNION ALL
+        SELECT l.to_title_id, l.to_title, ld.depth + 1
+        FROM links l
+        JOIN LinkedDocs ld ON l.from_title_id = ld.to_title_id
+        WHERE ld.depth < ?)
+      SELECT * FROM LinkedDocs;`)
+      .all(pageTitleId, 1) as Link[]
+
+    res.json(links)
+  } catch (err) {
+    next(err)
+  }
+}
