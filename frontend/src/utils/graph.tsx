@@ -47,11 +47,7 @@ const data: Data = {
   ],
 };
 
-export const chart = (ref: HTMLDivElement, data) => {
-  // Specify the dimensions of the chart.
-  const width = 928;
-  const height = 680;
-
+export const chart = (ref: HTMLCanvasElement, data) => {
   // Specify the color scale.
   const color = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -66,10 +62,14 @@ export const chart = (ref: HTMLDivElement, data) => {
     id: d.to_title_id,
     ...d,
   }));
-  console.log(
-    "here0",
-    nodes.find((node) => node.to_title_id === "society")
-  );
+
+  const context = ref.getContext("2d");
+  const width = ref.width;
+  const height = ref.height;
+
+  if (!context) {
+    return;
+  }
 
   // Create a simulation with several forces.
   const simulation = d3
@@ -81,113 +81,72 @@ export const chart = (ref: HTMLDivElement, data) => {
     .force("charge", d3.forceManyBody())
     .force("x", d3.forceX())
     .force("y", d3.forceY());
-  console.log("here1");
-  // Create the SVG container.
-  const svg = d3
-    .select(ref)
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [-width / 2, -height / 2, width, height])
-    .attr("style", "max-width: 100%; height: auto;");
-  console.log("here2");
 
-  // Add a line for each link, and a circle for each node.
-  const link = svg
-    .append("g")
-    .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6)
-    .selectAll("line")
-    .data(links)
-    .join("line")
-    // .attr("stroke-width", (d) => Math.sqrt(d.value));
-    .attr("stroke-width", 2);
-  console.log("here3");
+  simulation.nodes(nodes).on("tick", ticked);
 
-  const node = svg
-    .append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 1.5)
-    .selectAll("circle")
-    .data(nodes)
-    .join("circle")
-    .attr("r", 5)
-    // .attr("fill", (d) => color(d.group));
-    .attr("fill", (d) => color("same"));
-  console.log("here4");
+  simulation.force("link").links(links);
 
-  // node.append("title").text((d) => d.from_title_id);
-
-  // TODO
-  // node.append('p')
-  // .text((d) => d.id)
-  // .style('opacity', 1); // Initially hide labels
-
-  // Add a drag behavior.
-  node.call(
-    d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)
+  d3.select(ref).call(
+    d3
+      .drag()
+      .container(ref)
+      .subject(dragsubject)
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended)
   );
-  console.log("here5");
 
-  // Set the position attributes of links and nodes each time the simulation ticks.
-  // simulation.on("tick", () => {
-  //   link
-  //     .attr("x1", (d) => d.source.x)
-  //     .attr("y1", (d) => d.source.y)
-  //     .attr("x2", (d) => d.target.x)
-  //     .attr("y2", (d) => d.target.y);
+  function ticked() {
+    context.clearRect(0, 0, width, height);
 
-  //   node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-  // });
-  console.log("here6");
+    // draw links
+    context.beginPath();
+    links.forEach(drawLink);
+    context.strokeStyle = "#999999af";
+    context.lineWidth = 2;
+    context.stroke();
 
-  // Reheat the simulation when drag starts, and fix the subject position.
-  function dragstarted(
-    event: d3.D3DragEvent<SVGCircleElement, unknown, Data["nodes"][number]>
-  ) {
+    // draw nodes
+    context.beginPath();
+    nodes.forEach(drawNode);
+    context.fill();
+    context.fillStyle = color("same");
+    context.strokeStyle = "#fff";
+    context.lineWidth = 1.5;
+    context.stroke();
+  }
+
+  function dragsubject(event) {
+    return simulation.find(event.x, event.y);
+  }
+
+  function dragstarted(event) {
     if (!event.active) simulation.alphaTarget(0.3).restart();
     event.subject.fx = event.subject.x;
     event.subject.fy = event.subject.y;
   }
 
-  // Update the subject (dragged node) position during drag.
-  function dragged(
-    event: d3.D3DragEvent<SVGCircleElement, unknown, Data["nodes"][number]>
-  ) {
+  function dragged(event) {
     event.subject.fx = event.x;
     event.subject.fy = event.y;
   }
 
-  // Restore the target alpha so the simulation cools after dragging ends.
-  // Unfix the subject position now that it’s no longer being dragged.
-  function dragended(
-    event: d3.D3DragEvent<SVGCircleElement, unknown, Data["nodes"][number]>
-  ) {
+  function dragended(event) {
     if (!event.active) simulation.alphaTarget(0);
     event.subject.fx = null;
     event.subject.fy = null;
   }
 
-  // TODO
-  // const handleZoom = (event: d3.D3ZoomEvent<SVGCircleElement, any>) => {
-  //   const { transform } = event;
+  function drawLink(d) {
+    context.moveTo(d.source.x, d.source.y);
+    context.lineTo(d.target.x, d.target.y);
+  }
 
-  //   // Apply zoom transformations to your graph elements
-  //   svg
-  //     .selectAll("circle")
-  //     .attr("cx", (d) => d.x * transform.k)
-  //     .attr("cy", (d) => d.y * transform.k)
-  //     .attr("r", (d) => 5 * transform.k); // Adjust the radius as needed
-
-  //   // Gradually show/hide labels based on zoom level
-  //   svg.selectAll("text").style("opacity", (d) => (transform.k > 1.5 ? 1 : 0)); // Adjust the zoom threshold as needed
-  // };
-  console.log("here7");
-
-  // When this is re-run, stop the previous simulation (cleanup)
+  function drawNode(d) {
+    context.moveTo(d.x + 5, d.y);
+    context.arc(d.x, d.y, 5, 0, 2 * Math.PI + 1);
+  }
   return {
-    node: svg.node(),
-    simulation,
-    cleanup: () => d3.select(ref).selectAll("svg").remove(),
+    cleanup: () => context.clearRect(0, 0, width, height),
   };
 };

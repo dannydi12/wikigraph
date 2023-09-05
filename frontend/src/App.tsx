@@ -5,7 +5,7 @@ import { api } from "./utils/api";
 import { Link } from "./types/Link";
 
 function App() {
-  const ref = createRef<HTMLDivElement>();
+  const ref = createRef<HTMLCanvasElement>();
   const [links, setLinks] = useState<Link[]>([]);
 
   const getDeepLinks = async () => {
@@ -37,7 +37,7 @@ function App() {
   return (
     <StyledApp>
       <p>Hi!</p>
-      <div ref={ref} />
+      <canvas width={928} height={680} ref={ref} />
     </StyledApp>
   );
 }
