@@ -1,9 +1,21 @@
-import { createRef, useEffect } from "react";
+import { createRef, useEffect, useState } from "react";
 import { StyledApp } from "./App.styled";
 import { chart } from "./utils/graph";
+import { api } from "./utils/api";
+import { Link } from "./types/Link";
 
 function App() {
   const ref = createRef<HTMLDivElement>();
+  const [links, setLinks] = useState<Link[]>([]);
+
+  const getDeepLinks = async () => {
+    const { data } = await api<Link[]>({
+      url: "/links/anarchy",
+      method: "GET",
+    });
+
+    setLinks(data);
+  };
 
   useEffect(() => {
     if (!ref.current) {
@@ -13,8 +25,12 @@ function App() {
     const { cleanup } = chart(ref.current);
 
     return () => {
-      cleanup()
+      cleanup();
     };
+  }, []);
+
+  useEffect(() => {
+    getDeepLinks();
   }, []);
 
   return (
