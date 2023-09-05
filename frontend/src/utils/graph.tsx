@@ -7,8 +7,10 @@ type Data = {
     target: string;
   }[];
   nodes: {
-    id: string;
-    label: string;
+    link_id: number;
+    from_title_id: string;
+    to_title_id: string;
+    to_title: string;
     vx?: number;
     vy?: number;
     x?: number;
@@ -20,17 +22,32 @@ type Data = {
 
 const data: Data = {
   links: [
-    { id: 1, source: "my article", target: "my article2" },
-    { id: 2, source: "my article", target: "my article3" },
+    { id: 1, source: "my hgee", target: "my article2" },
+    { id: 2, source: "my asdfsdfrticle", target: "my article3" },
   ],
   nodes: [
-    { id: "my article", label: "hi" },
-    { id: "my article2", label: "ahi" },
-    { id: "my article3", label: "ghi" },
+    {
+      link_id: 123,
+      from_title_id: "my article",
+      to_title_id: "my article2",
+      to_title: "my article2",
+    },
+    {
+      link_id: 1234,
+      from_title_id: "my article2",
+      to_title_id: "my article3",
+      to_title: "my article3",
+    },
+    {
+      link_id: 1235,
+      from_title_id: "my article3",
+      to_title_id: "my article",
+      to_title: "my article",
+    },
   ],
 };
 
-export const chart = (ref: HTMLDivElement) => {
+export const chart = (ref: HTMLDivElement, data) => {
   // Specify the dimensions of the chart.
   const width = 928;
   const height = 680;
@@ -40,8 +57,19 @@ export const chart = (ref: HTMLDivElement) => {
 
   // The force simulation mutates links and nodes, so create a copy
   // so that re-evaluating this cell produces the same result.
-  const links = data.links.map((d) => ({ ...d }));
-  const nodes = data.nodes.map((d) => ({ ...d }));
+  const links = data.map((d) => ({
+    id: d.link_id,
+    source: d.from_title_id,
+    target: d.to_title_id,
+  }));
+  const nodes: Data["nodes"] = data.map((d) => ({
+    id: d.to_title_id,
+    ...d,
+  }));
+  console.log(
+    "here0",
+    nodes.find((node) => node.to_title_id === "society")
+  );
 
   // Create a simulation with several forces.
   const simulation = d3
@@ -53,7 +81,7 @@ export const chart = (ref: HTMLDivElement) => {
     .force("charge", d3.forceManyBody())
     .force("x", d3.forceX())
     .force("y", d3.forceY());
-
+  console.log("here1");
   // Create the SVG container.
   const svg = d3
     .select(ref)
@@ -62,6 +90,7 @@ export const chart = (ref: HTMLDivElement) => {
     .attr("height", height)
     .attr("viewBox", [-width / 2, -height / 2, width, height])
     .attr("style", "max-width: 100%; height: auto;");
+  console.log("here2");
 
   // Add a line for each link, and a circle for each node.
   const link = svg
@@ -73,6 +102,7 @@ export const chart = (ref: HTMLDivElement) => {
     .join("line")
     // .attr("stroke-width", (d) => Math.sqrt(d.value));
     .attr("stroke-width", 2);
+  console.log("here3");
 
   const node = svg
     .append("g")
@@ -84,8 +114,9 @@ export const chart = (ref: HTMLDivElement) => {
     .attr("r", 5)
     // .attr("fill", (d) => color(d.group));
     .attr("fill", (d) => color("same"));
+  console.log("here4");
 
-  node.append("title").text((d) => d.id);
+  // node.append("title").text((d) => d.from_title_id);
 
   // TODO
   // node.append('p')
@@ -96,17 +127,19 @@ export const chart = (ref: HTMLDivElement) => {
   node.call(
     d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)
   );
+  console.log("here5");
 
   // Set the position attributes of links and nodes each time the simulation ticks.
-  simulation.on("tick", () => {
-    link
-      .attr("x1", (d) => d.source.x)
-      .attr("y1", (d) => d.source.y)
-      .attr("x2", (d) => d.target.x)
-      .attr("y2", (d) => d.target.y);
+  // simulation.on("tick", () => {
+  //   link
+  //     .attr("x1", (d) => d.source.x)
+  //     .attr("y1", (d) => d.source.y)
+  //     .attr("x2", (d) => d.target.x)
+  //     .attr("y2", (d) => d.target.y);
 
-    node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-  });
+  //   node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+  // });
+  console.log("here6");
 
   // Reheat the simulation when drag starts, and fix the subject position.
   function dragstarted(
@@ -149,6 +182,7 @@ export const chart = (ref: HTMLDivElement) => {
   //   // Gradually show/hide labels based on zoom level
   //   svg.selectAll("text").style("opacity", (d) => (transform.k > 1.5 ? 1 : 0)); // Adjust the zoom threshold as needed
   // };
+  console.log("here7");
 
   // When this is re-run, stop the previous simulation (cleanup)
   return {

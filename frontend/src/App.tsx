@@ -10,24 +10,25 @@ function App() {
 
   const getDeepLinks = async () => {
     const { data } = await api<Link[]>({
-      url: "/links/anarchy",
+      url: "/links/deep/anarchy",
       method: "GET",
     });
 
+    console.log('data?')
     setLinks(data);
   };
 
   useEffect(() => {
-    if (!ref.current) {
+    if (!ref.current || !links.length) {
       return;
     }
 
-    const { cleanup } = chart(ref.current);
+    const { cleanup } = chart(ref.current, links);
 
     return () => {
       cleanup();
     };
-  }, []);
+  }, [links]);
 
   useEffect(() => {
     getDeepLinks();
