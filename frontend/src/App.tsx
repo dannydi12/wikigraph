@@ -1,16 +1,18 @@
 import { createRef, useEffect, useState } from "react";
 import { StyledApp } from "./App.styled";
-import { chart } from "./utils/graph";
+import { data, graph } from "./utils/graph";
 import { api } from "./utils/api";
 import { Link } from "./types/Link";
+import { useWindowSize } from "usehooks-ts";
 
 function App() {
   const ref = createRef<HTMLCanvasElement>();
+  const { width, height } = useWindowSize();
   const [links, setLinks] = useState<Link[]>([]);
 
   const getDeepLinks = async () => {
     const { data } = await api<Link[]>({
-      url: "/links/deep/anarchy",
+      url: "/links/deep/abbot of melrose",
       method: "GET",
     });
 
@@ -23,21 +25,17 @@ function App() {
       return;
     }
 
-    const { cleanup } = chart(ref.current, links);
-
-    return () => {
-      cleanup();
-    };
+    graph(ref.current, links);
   }, [links]);
 
   useEffect(() => {
     getDeepLinks();
   }, []);
 
+
   return (
     <StyledApp>
-      <p>Hi!</p>
-      <canvas width={928} height={680} ref={ref} />
+      <canvas width={width} height={height} ref={ref} />
     </StyledApp>
   );
 }

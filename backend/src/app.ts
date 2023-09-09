@@ -10,7 +10,7 @@ const morganOption = process.env.NODE_ENV === 'production' ? 'tiny' : 'common'
 
 app.use(morgan(morganOption))
 // app.use(helmet()); // <-- security (use later)
-app.use(cors({ origin: ['http://localhost:5173'], credentials: true }))
+app.use(cors({ origin: '*', credentials: true }))
 app.use(express.json())
 
 
