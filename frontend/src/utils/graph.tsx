@@ -7,60 +7,49 @@ type Node = d3.SimulationNodeDatum & {
   to_title: string;
 };
 
-type Link = d3.SimulationLinkDatum<Node> & {
-  id: number;
-  source: string;
-  target: string;
-};
+// type Link = d3.SimulationLinkDatum<Node> & {
+//   id: number;
+//   source: string;
+//   target: string;
+// };
 
-type Data = {
-  links: Link[];
-  nodes: Node[];
-};
+// type Data = {
+//   links: Link[];
+//   nodes: Node[];
+// };
 
-export const data: Data = {
-  links: [
-    { id: 1, source: "my hgee", target: "my article2" },
-    { id: 2, source: "my asdfsdfrticle", target: "my article3" },
-  ],
-  nodes: [
-    {
-      link_id: 123,
-      from_title_id: "my article",
-      to_title_id: "my article2",
-      to_title: "my article2",
-      x: 0,
-      y: 0,
-    },
-    {
-      link_id: 1234,
-      from_title_id: "my article2",
-      to_title_id: "my article3",
-      to_title: "my article3",
-      x: 0,
-      y: 0,
-    },
-    {
-      link_id: 1235,
-      from_title_id: "my article3",
-      to_title_id: "my article",
-      to_title: "my article",
-      x: 0,
-      y: 0,
-    },
-  ],
-};
-
-function forceSimulation(width: number, height: number) {
-  return d3
-    .forceSimulation()
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("charge", d3.forceManyBody())
-    .force(
-      "link",
-      d3.forceLink<Node, Link>().id((d) => d.id)
-    );
-}
+//  const data: Data = {
+//   links: [
+//     { id: 1, source: "my hgee", target: "my article2" },
+//     { id: 2, source: "my asdfsdfrticle", target: "my article3" },
+//   ],
+//   nodes: [
+//     {
+//       link_id: 123,
+//       from_title_id: "my article",
+//       to_title_id: "my article2",
+//       to_title: "my article2",
+//       x: 0,
+//       y: 0,
+//     },
+//     {
+//       link_id: 1234,
+//       from_title_id: "my article2",
+//       to_title_id: "my article3",
+//       to_title: "my article3",
+//       x: 0,
+//       y: 0,
+//     },
+//     {
+//       link_id: 1235,
+//       from_title_id: "my article3",
+//       to_title_id: "my article",
+//       to_title: "my article",
+//       x: 0,
+//       y: 0,
+//     },
+//   ],
+// };
 
 function findNode(nodes: Node[], x: number, y: number, radius: number) {
   const rSq = radius * radius;
@@ -79,9 +68,9 @@ function findNode(nodes: Node[], x: number, y: number, radius: number) {
 }
 
 export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
-  const w2 = ref.width / 2,
-    h2 = ref.height / 2,
-    nodeRadius = 5;
+  const nodeRadius = 5;
+  let clickStart = 0; // Variable to track the start of mouse events
+  const clickThreshold = 300; // Define a threshold for differentiating click and drag (in milliseconds)
 
   const ctx = ref.getContext("2d") as CanvasRenderingContext2D;
   const canvas = ctx.canvas;
@@ -90,9 +79,6 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
 
   // The simulation will alter the input data objects so make
   // copies to protect the originals.
-  // const nodes = data.nodes.map((d) => ({...d}));
-  // const edges = data.links.map((d) => ({...d}));
-
   const links = data.map((d) => ({
     id: d.from_title_id + d.to_title_id,
     source: d.from_title_id,
@@ -103,7 +89,6 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
     ...d,
   }));
 
-  console.log(nodes, links)
 
   d3.select(canvas)
     .call(
@@ -123,7 +108,7 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
         .on("zoom", zoomed)
     );
 
-    const simulation = d3
+  const simulation = d3
     .forceSimulation(nodes)
     .force(
       "link",
@@ -134,12 +119,12 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
     .force("x", d3.forceX())
     .force("y", d3.forceY());
 
-
   simulation.nodes(nodes).on("tick", simulationUpdate);
 
   simulation.force("link").links(links);
 
   let transform = d3.zoomIdentity;
+
   function zoomed(event) {
     transform = event.transform;
     simulationUpdate();
@@ -150,7 +135,7 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
     const x = transform.invertX(event.x),
       y = transform.invertY(event.y);
     const node = findNode(nodes, x, y, nodeRadius);
-    console.log('is node', node)
+
     if (node) {
       node.x = transform.applyX(node.x);
       node.y = transform.applyY(node.y);
@@ -160,6 +145,7 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
   }
 
   function dragStarted(event) {
+    clickStart = Date.now(); // Record the time when the mouse button is pressed
     if (!event.active) {
       simulation.alphaTarget(0.3).restart();
     }
@@ -173,6 +159,15 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
   }
 
   function dragEnded(event) {
+    const clickEnd = Date.now(); // Record the time when the mouse button is released
+    const clickDuration = clickEnd - clickStart; // Calculate the time elapsed
+
+    if (clickDuration <= clickThreshold) {
+      // Treat it as a click event
+      window.open(`https://wikipedia.com/wiki/${event.subject.to_title.split(' ').join('_')}`, "_blank");
+
+    }
+
     if (!event.active) {
       simulation.alphaTarget(0.3);
     }
@@ -180,8 +175,11 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
     event.subject.fy = null;
   }
 
+  const labelZoomThreshold = 3;
   function simulationUpdate() {
     const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    const shouldDisplayLabels = transform.k >= labelZoomThreshold;
 
     ctx.save();
     ctx.clearRect(0, 0, ref.width, ref.height);
@@ -208,11 +206,16 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 1.5;
       ctx.stroke();
+
+      // Check if labels should be displayed
+      if (shouldDisplayLabels) {
+        ctx.font = `${12 / transform.k}px Arial`;
+        ctx.fillStyle = "#000";
+        ctx.fillText(d.to_title, d.x - d.to_title.length / 3, d.y - 5); // Adjust label position as needed
+      }
     });
     ctx.restore();
   }
-
-  return canvas;
 };
 
 // =============================
@@ -241,19 +244,19 @@ export const graph = (ref: HTMLCanvasElement, data: Node[]) => {
 //   }
 
 //   // Create a simulation with several forces.
-  // const simulation = d3
-  //   .forceSimulation(nodes)
-  //   .force(
-  //     "link",
-  //     d3.forceLink(links).id((d) => d.id)
-  //   )
-  //   .force("charge", d3.forceManyBody())
-  //   .force("x", d3.forceX())
-  //   .force("y", d3.forceY());
+// const simulation = d3
+//   .forceSimulation(nodes)
+//   .force(
+//     "link",
+//     d3.forceLink(links).id((d) => d.id)
+//   )
+//   .force("charge", d3.forceManyBody())
+//   .force("x", d3.forceX())
+//   .force("y", d3.forceY());
 
-  // simulation.nodes(nodes).on("tick", ticked);
+// simulation.nodes(nodes).on("tick", ticked);
 
-  // simulation.force("link").links(links);
+// simulation.force("link").links(links);
 
 //   d3.select(ref).call(
 //     d3
