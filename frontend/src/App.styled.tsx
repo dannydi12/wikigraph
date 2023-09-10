@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const StyledApp = styled.div`
-  canvas {
+  #the {
     width: 100%;
     height: 100vh;
   }

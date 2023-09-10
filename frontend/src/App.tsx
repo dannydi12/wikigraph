@@ -1,22 +1,21 @@
 import { createRef, useEffect, useState } from "react";
 import { StyledApp } from "./App.styled";
-import { data, graph } from "./utils/graph";
+import { graph } from "./utils/cytograph";
 import { api } from "./utils/api";
 import { Link } from "./types/Link";
 import { useWindowSize } from "usehooks-ts";
 
 function App() {
-  const ref = createRef<HTMLCanvasElement>();
-  const { width, height } = useWindowSize();
+  const ref = createRef<HTMLDivElement>();
   const [links, setLinks] = useState<Link[]>([]);
 
   const getDeepLinks = async () => {
     const { data } = await api<Link[]>({
-      url: "/links/deep/abbot of melrose",
+      // url: "/links/deep/united states",
+      url: "/links/deep/anarchy",
       method: "GET",
     });
 
-    console.log('data?')
     setLinks(data);
   };
 
@@ -25,17 +24,21 @@ function App() {
       return;
     }
 
-    graph(ref.current, links);
+  const cleanup = graph(ref.current, 'anarchy', links);
+
+  return () => {
+    console.log('cleanup')
+    cleanup()
+  };
   }, [links]);
 
   useEffect(() => {
     getDeepLinks();
   }, []);
 
-
   return (
     <StyledApp>
-      <canvas width={width} height={height} ref={ref} />
+      <div ref={ref} />
     </StyledApp>
   );
 }
