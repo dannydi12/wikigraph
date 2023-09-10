@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const StyledApp = styled.div`
-  #the {
+  #graph {
     width: 100%;
     height: 100vh;
   }
