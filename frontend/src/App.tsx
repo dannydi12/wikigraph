@@ -38,7 +38,7 @@ function App() {
 
   return (
     <StyledApp>
-      <div ref={ref} />
+      <div id="graph" ref={ref} />
     </StyledApp>
   );
 }
