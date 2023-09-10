@@ -78,6 +78,19 @@ export const graph = (ref: HTMLDivElement, search: string, data: Node[]) => {
       {
         selector: "node",
         style: {
+          // Node background color
+          "background-color": "#3498db",
+          // Node shape
+          shape: "ellipse",
+          // Node label
+          label: "data(id)",
+          // Node size
+          width: 30,
+          height: 30,
+          // Node font size and color
+          "font-size": 14,
+          color: "#333333",
+
           content: "data(id)",
         },
       },
@@ -85,8 +98,17 @@ export const graph = (ref: HTMLDivElement, search: string, data: Node[]) => {
       {
         selector: "edge",
         style: {
+          // Edge line color
+          "line-color": "#e74c3c",
+          // Edge line width
+          width: 2,
+          // Edge arrow style
           "curve-style": "bezier",
           "target-arrow-shape": "triangle",
+          "target-arrow-color": "#e74c3c",
+          // Edge font size and color
+          "font-size": 12,
+          color: "#333333",
         },
       },
     ],

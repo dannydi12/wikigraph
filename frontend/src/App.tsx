@@ -12,7 +12,7 @@ function App() {
   const getDeepLinks = async () => {
     const { data } = await api<Link[]>({
       // url: "/links/deep/united states",
-      url: "/links/deep/anarchy",
+      url: "/links/anarchy",
       method: "GET",
     });
 
