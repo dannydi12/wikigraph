@@ -6,29 +6,8 @@ import ForceGraph2d, {
   NodeObject,
 } from "react-force-graph-2d";
 import ForceGraph3d from "react-force-graph-3d";
+import { APIResponse, Data, Link, Node } from "./types/GraphTypes";
 
-type Response = {
-  from_title_id: string; // originating article
-  to_title_id: string; // article being references
-  to_title: string; // user friendly formatting of `to_title_id`
-  link_id: number;
-}[];
-
-type Link = {
-  // id: string;
-  source: string;
-  target: string;
-};
-
-type Node = {
-  id: string;
-  title: string;
-};
-
-type Data = {
-  links: Link[];
-  nodes: Node[];
-};
 
 function App() {
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
@@ -37,7 +16,7 @@ function App() {
   const [highlightedNodes, setHighlightedNodes] = useState(new Set<string>());
 
   const getLinks = async (title: string) => {
-    const { data } = await api<Response>({
+    const { data } = await api<APIResponse>({
       url: `/links/${title}`,
       method: "GET",
     });
@@ -108,7 +87,7 @@ function App() {
       const highlightNode = highlightedNodes.has(node.id);
 
       const label = node.title; // Change this to the property you want to use as the label
-      const radius = 1;
+      const radius = Math.min(10 / globalScale, 2);
       const fontSize = 12 / globalScale;
       const textYOffset = 30 / globalScale; // Offset for text below the circle
 
@@ -191,10 +170,8 @@ function App() {
         enableNodeDrag={false}
         onNodeClick={handleClick}
         graphData={data as any}
-        cooldownTime={400}
         nodeLabel={(n) => n.title}
         onNodeHover={handleHover}
-        nodeRelSize={1}
         linkWidth={decideLineWidth}
         linkDirectionalParticles={4}
         linkDirectionalParticleWidth={decideShowParticles}
@@ -207,7 +184,7 @@ function App() {
         nodeLabel={(n) => n.title}
         nodeCanvasObject={nodeCanvasObject}
         onNodeHover={handleHover}
-        nodeRelSize={1}
+        nodeRelSize={5}
         maxZoom={20}
         minZoom={0.2}
         linkWidth={decideLineWidth}
