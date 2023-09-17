@@ -1,12 +1,7 @@
-import { createRef, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { StyledApp } from "./App.styled";
-import { graph } from "./utils/cytograph";
 import { api } from "./utils/api";
-// import { Link } from "./types/Link";
-import { useWindowSize } from "usehooks-ts";
-import { DisplayGraph } from "./Graph";
 import ForceGraph2d, {
-  ForceGraphMethods,
   LinkObject,
   NodeObject,
 } from "react-force-graph-2d";
