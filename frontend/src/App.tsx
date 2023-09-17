@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { StyledApp } from "./App.styled";
 import { api } from "./utils/api";
 import { APIResponse, Data } from "./types/GraphTypes";
 import Graph from "./Graph/Graph";
 
-function App() {
+const App: FC = () => {
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
 
   const getLinks = async (title: string) => {
@@ -39,6 +39,6 @@ function App() {
       <Graph data={data} getLinks={getLinks} setData={setData} />
     </StyledApp>
   );
-}
+};
 
 export default App;
