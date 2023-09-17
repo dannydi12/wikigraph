@@ -45,21 +45,21 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
     ) => {
       const highlightNode = highlightedNodes.has(node.id);
 
-      const label = node.title;
+      const label = globalScale < 1 ? '' : node.title;
       const radius = Math.min(10 / globalScale, 2);
       const fontSize = 12 / globalScale;
-      const textYOffset = 30 / globalScale; // Offset for text below the circle
+      const textYOffset = 20 / globalScale; // Offset for text below the circle
 
       // Draw white outline circle
-      ctx.beginPath();
-      ctx.arc(node.x!, node.y!, radius + 0.2, 0, 2 * Math.PI, false);
-      ctx.fillStyle = "white";
-      ctx.fill();
+      // ctx.beginPath();
+      // ctx.arc(node.x!, node.y!, radius + 0.2, 0, 2 * Math.PI, false);
+      // ctx.fillStyle = "white";
+      // ctx.fill();
 
       // Draw blue circle
       ctx.beginPath();
       ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = highlightNode ? "orange" : "#3183ba";
+      ctx.fillStyle = highlightNode ?  "orange" : "#3183ba";
       ctx.fill();
 
       // Draw text below the circle
@@ -70,7 +70,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
         highlightNode && hoveredNode !== node.id
           ? 1
           : Math.min(Math.max(globalScale - 3.5, 0) / 5, 1);
-      ctx.fillStyle = "black";
+      ctx.fillStyle = "white";
       ctx.fillText(label, node.x!, node.y! + textYOffset);
 
       ctx.globalAlpha = 1;
@@ -99,6 +99,18 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
       const largeLine = source.id === hoveredNode || target.id === hoveredNode;
 
       return largeLine ? 4 : 1;
+    },
+    [hoveredNode]
+  );
+
+  const decideLineColor = useCallback(
+    (element: LinkObject<Node, Link>) => {
+      const source = element.source as NodeObject<Node>;
+      const target = element.target as NodeObject<Node>;
+
+      const isHovered = source.id === hoveredNode || target.id === hoveredNode;
+
+      return isHovered ? '#e2e2e242' : '#3f3f3f42';
     },
     [hoveredNode]
   );
@@ -148,6 +160,8 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
       graphData={data}
       cooldownTime={400}
       nodeLabel={(n) => n.title}
+      linkColor={decideLineColor}
+      linkDirectionalParticleColor={() => 'white'}
       nodeCanvasObject={nodeCanvasObject}
       onNodeHover={handleHover}
       nodeRelSize={5}
