@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
 
-export const myMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  // if (!req.session.user) {
-  //   return next()
-  // }
+export const cacheResponse = async (req: Request, res: Response, next: NextFunction) => {
+  const oneDayInSeconds = 86_400
+  const expiryDate = Date.now() + oneDayInSeconds * 1000
+  const expiryDateUTC = new Date(expiryDate).toUTCString()
 
-  // // TODO: would be nice to make a redis call
-  // req.user = req.session.user
+  res.setHeader('Cache-Control', `public, max-age=${oneDayInSeconds}`) // 86400 seconds = 1 day
+  res.setHeader('Expires', expiryDateUTC) // Expires header set to one day from now
 
   return next()
 }
