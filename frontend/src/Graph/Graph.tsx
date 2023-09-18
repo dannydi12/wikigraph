@@ -1,19 +1,39 @@
-import { FC, useCallback, useEffect, useState } from "react";
-import ForceGraph2d, { LinkObject, NodeObject } from "react-force-graph-2d";
+import { FC, useCallback, useEffect, useState, useRef } from "react";
+import ForceGraph2d, {
+  LinkObject,
+  NodeObject,
+  ForceGraphMethods,
+} from "react-force-graph-2d";
 import ForceGraph3d from "react-force-graph-3d";
 import { Data, Link, Node } from "../types/GraphTypes";
 import { distinctByKey } from "../utils/distinctByKey";
 
 type Props = {
   data: Data;
+  topic: string;
   getLinks: (url: string) => Promise<Data>;
   setData: (v: any) => void;
 };
 
-const Graph: FC<Props> = ({ data, getLinks, setData }) => {
+const Graph: FC<Props> = ({ data, getLinks, setData, topic }) => {
+  const ref =
+    useRef<ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>>();
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [show3d, setShow3d] = useState(false);
   const [highlightedNodes, setHighlightedNodes] = useState(new Set<string>());
+  const [isNewSearch, setIsNewSearch] = useState(true);
+
+  const zoomInOnLastClicked = useCallback(
+    (nodeId: string) => {
+      const node = data.nodes.find(
+        (node) => node.id === nodeId
+      ) as NodeObject<Node>;
+
+      // keeps last clicked node in the center of the page
+      ref.current?.centerAt(node.x, node.y, 400);
+    },
+    [data]
+  );
 
   const handleClick = useCallback(
     async (node: NodeObject<Node>, event: MouseEvent) => {
@@ -32,10 +52,14 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
         nodes: distinctByKey([...data.nodes, ...nodes], "id"),
         links: [...data.links, ...links],
       });
+
+      // wait for graph to finish animating + 200ms for safety
+      setTimeout(() => {
+        zoomInOnLastClicked(node.id);
+      }, 600);
     },
     [data, setData]
   );
-
 
   const nodeCanvasObject = useCallback(
     (
@@ -45,7 +69,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
     ) => {
       const highlightNode = highlightedNodes.has(node.id);
 
-      const label = globalScale < 1 ? '' : node.title;
+      const label = globalScale < 1 ? "" : node.title;
       const radius = Math.min(10 / globalScale, 2);
       const fontSize = 12 / globalScale;
       const textYOffset = 20 / globalScale; // Offset for text below the circle
@@ -59,7 +83,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
       // Draw blue circle
       ctx.beginPath();
       ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = highlightNode ?  "orange" : "#3183ba";
+      ctx.fillStyle = highlightNode ? "orange" : "#3183ba";
       ctx.fill();
 
       // Draw text below the circle
@@ -110,7 +134,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
 
       const isHovered = source.id === hoveredNode || target.id === hoveredNode;
 
-      return isHovered ? '#e2e2e242' : '#3f3f3f42';
+      return isHovered ? "#e2e2e242" : "#3f3f3f42";
     },
     [hoveredNode]
   );
@@ -138,6 +162,17 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
     setHighlightedNodes(nodesToHighlight);
   };
 
+  const handleInitialZoom = () => {
+    if (isNewSearch) {
+      ref.current?.zoomToFit(1000, 100);
+      setIsNewSearch(false);
+    }
+  };
+
+  useEffect(() => {
+    setIsNewSearch(true);
+  }, [topic]);
+
   if (show3d) {
     return (
       <ForceGraph3d
@@ -155,13 +190,14 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
 
   return (
     <ForceGraph2d
+      ref={ref}
       enableNodeDrag={false}
       onNodeClick={handleClick}
       graphData={data}
       cooldownTime={400}
       nodeLabel={(n) => n.title}
       linkColor={decideLineColor}
-      linkDirectionalParticleColor={() => 'white'}
+      linkDirectionalParticleColor={() => "white"}
       nodeCanvasObject={nodeCanvasObject}
       onNodeHover={handleHover}
       nodeRelSize={5}
@@ -170,6 +206,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData }) => {
       linkWidth={decideLineWidth}
       linkDirectionalParticles={4}
       linkDirectionalParticleWidth={decideShowParticles}
+      onEngineStop={handleInitialZoom}
     />
   );
 };
