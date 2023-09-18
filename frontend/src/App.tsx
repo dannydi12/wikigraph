@@ -46,7 +46,7 @@ const App: FC = () => {
 
   return (
     <StyledApp>
-      <Search setTopic={setTopic} />
+      <Search topic={topic} setTopic={setTopic} />
       <Graph data={data} getLinks={getLinks} setData={setData} topic={topic} />
     </StyledApp>
   );
