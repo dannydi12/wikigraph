@@ -23,7 +23,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData, topic }) => {
   const [highlightedNodes, setHighlightedNodes] = useState(new Set<string>());
   const [isNewSearch, setIsNewSearch] = useState(true);
 
-  const zoomInOnLastClicked = useCallback(
+  const zoomToLastClicked = useCallback(
     (nodeId: string) => {
       const node = data.nodes.find(
         (node) => node.id === nodeId
@@ -55,7 +55,7 @@ const Graph: FC<Props> = ({ data, getLinks, setData, topic }) => {
 
       // wait for graph to finish animating + 200ms for safety
       setTimeout(() => {
-        zoomInOnLastClicked(node.id);
+        zoomToLastClicked(node.id);
       }, 600);
     },
     [data, setData]
