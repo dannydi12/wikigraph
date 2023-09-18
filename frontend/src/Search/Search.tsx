@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { StyledSearch } from "./Search.styled";
 import { api } from "../utils/api";
 import { WikiSearch } from "backend/src/wikipedia/wikipedia.type";
+import { WikiSearchDisplay } from "../types/WikipediaSearchTypes";
 
 type Props = {
   topic: string;
@@ -10,11 +11,11 @@ type Props = {
 
 const Search: FC<Props> = ({ setTopic, topic }) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<string[]>([]);
+  const [results, setResults] = useState<WikiSearchDisplay[]>([]);
 
   const getWikiSearch = async () => {
     if (!query) {
-      setResults([])
+      setResults([]);
       return;
     }
 
@@ -23,7 +24,12 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
       params: { search: query },
     });
 
-    setResults(data.query.search.map((search) => search.title));
+    setResults(
+      data.query.search.map((search) => ({
+        title: search.title,
+        snippet: search.snippet,
+      }))
+    );
   };
 
   useEffect(() => {
@@ -41,8 +47,11 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
 
       <div className="results">
         {results.map((result) => (
-          <div key={result} onClick={() => setTopic(result.toLowerCase())}>
-            {result}
+          <div
+            key={result.title}
+            onClick={() => setTopic(result.title.toLowerCase())}
+          >
+            {result.title}
           </div>
         ))}
       </div>
