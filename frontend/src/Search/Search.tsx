@@ -3,6 +3,7 @@ import { StyledSearch } from "./Search.styled";
 import { api } from "../utils/api";
 import { WikiSearch } from "backend/src/wikipedia/wikipedia.type";
 import { WikiSearchDisplay } from "../types/WikipediaSearchTypes";
+import SearchResult from "./SearchResult";
 
 type Props = {
   topic: string;
@@ -47,12 +48,11 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
 
       <div className="results">
         {results.map((result) => (
-          <div
+          <SearchResult
             key={result.title}
+            result={result}
             onClick={() => setTopic(result.title.toLowerCase())}
-          >
-            {result.title}
-          </div>
+          />
         ))}
       </div>
     </StyledSearch>
