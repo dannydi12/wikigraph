@@ -6,12 +6,15 @@ import Graph from "./Graph/Graph";
 import Search from "./Search/Search";
 import { randomSearchRecommendation } from "./utils/randomeSearchRecommendation";
 import { searchableSuggestions } from "./utils/constants";
+import { setGraphData, useAppDispatch, useAppSelector } from "./redux";
 
 const App: FC = () => {
   const [topic, setTopic] = useState(
     randomSearchRecommendation(searchableSuggestions)
   );
-  const [data, setData] = useState<Data>({ nodes: [], links: [] });
+  const links = useAppSelector((state) => state.graph.links);
+  const nodes = useAppSelector((state) => state.graph.nodes);
+  const dispatch = useAppDispatch();
 
   const getLinks = async (title: string) => {
     const { data } = await api<APIResponse>({
@@ -19,30 +22,30 @@ const App: FC = () => {
       method: "GET",
     });
 
-    const links = data.map((d) => ({
+    const newLinks = data.map((d) => ({
       source: d.from_title_id,
       target: d.to_title_id,
     }));
-    const nodes = data.map((d) => ({
+    const newNodes = data.map((d) => ({
       id: d.to_title_id,
       title: d.to_title,
     }));
 
     // add missing root node
-    if (!nodes.some((node) => node.id === topic)) {
-      nodes.push({
+    if (!newNodes.some((node) => node.id === topic)) {
+      newNodes.push({
         id: topic,
         title: topic,
       });
     }
 
-    return { nodes, links };
+    return { nodes: newNodes, links: newLinks };
   };
 
   useEffect(() => {
     const loadTopic = async () => {
-      const { nodes, links } = await getLinks(topic);
-      setData({ nodes, links });
+      const { nodes: newNodes, links: newLinks } = await getLinks(topic);
+      dispatch(setGraphData({ nodes: newNodes, links: newLinks }));
     };
 
     loadTopic();
@@ -51,7 +54,12 @@ const App: FC = () => {
   return (
     <StyledApp>
       <Search topic={topic} setTopic={setTopic} />
-      <Graph data={data} getLinks={getLinks} setData={setData} topic={topic} />
+      <Graph
+        graphData={{ links, nodes }}
+        getLinks={getLinks}
+        setData={(v) => dispatch(setGraphData(v))}
+        topic={topic}
+      />
     </StyledApp>
   );
 };

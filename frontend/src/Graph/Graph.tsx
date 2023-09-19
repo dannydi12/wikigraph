@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState, useRef } from "react";
+import { FC, useCallback, useEffect, useState, useRef, useMemo } from "react";
 import ForceGraph2d, {
   LinkObject,
   NodeObject,
@@ -7,160 +7,176 @@ import ForceGraph2d, {
 import ForceGraph3d from "react-force-graph-3d";
 import { Data, Link, Node } from "../types/GraphTypes";
 import { distinctByKey } from "../utils/distinctByKey";
+import useGraphUtils from "../utils/useGraphUtils";
+import { useAppSelector } from "../redux";
 
 type Props = {
-  data: Data;
+  graphData: Data;
   topic: string;
   getLinks: (url: string) => Promise<Data>;
   setData: (v: any) => void;
 };
 
-const Graph: FC<Props> = ({ data, getLinks, setData, topic }) => {
+const Graph: FC<Props> = ({ graphData, getLinks, setData: sadfsd, topic }) => {
   const ref =
     useRef<ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>>();
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [show3d, setShow3d] = useState(false);
-  const [highlightedNodes, setHighlightedNodes] = useState(new Set<string>());
   const [isNewSearch, setIsNewSearch] = useState(true);
+  
+  const data = useMemo(() => {
+    return {
+      nodes: graphData.nodes.map((node) => Object.assign({}, node)),
+      links: graphData.links.map((link) => Object.assign({}, link)),
+    };
+  }, [graphData.nodes.length, graphData.links.length]);
 
-  const zoomToLastClicked = useCallback(
-    (nodeId: string) => {
-      const node = data.nodes.find(
-        (node) => node.id === nodeId
-      ) as NodeObject<Node>;
+  const {
+    handleHover,
+    decideLineColor,
+    decideLineWidth,
+    decideShowParticles,
+    handleClick,
+    nodeCanvasObject,
+  } = useGraphUtils(ref.current, data.nodes);
 
-      // keeps last clicked node in the center of the page
-      ref.current?.centerAt(node.x, node.y, 400);
-    },
-    [data]
-  );
+  // const zoomToLastClicked = useCallback(
+  //   (nodeId: string) => {
+  //     const node = data.nodes.find(
+  //       (node) => node.id === nodeId
+  //     ) as NodeObject<Node>;
 
-  const handleClick = useCallback(
-    async (node: NodeObject<Node>, event: MouseEvent) => {
-      // open wikipedia page if holding command or control keys
-      if (event.metaKey || event.ctrlKey) {
-        window.open(
-          "https://wikipedia.com/wiki/" + node.title.split(" ").join("_"),
-          "__blank"
-        );
-        return;
-      }
+  //     // keeps last clicked node in the center of the page
+  //     ref.current?.centerAt(node.x, node.y, 400);
+  //   },
+  //   [data]
+  // );
 
-      const { nodes, links } = await getLinks(node.id);
+  // const handleClick = useCallback(
+  //   async (node: NodeObject<Node>, event: MouseEvent) => {
+  //     // open wikipedia page if holding command or control keys
+  //     if (event.metaKey || event.ctrlKey) {
+  //       window.open(
+  //         "https://wikipedia.com/wiki/" + node.title.split(" ").join("_"),
+  //         "__blank"
+  //       );
+  //       return;
+  //     }
 
-      setData({
-        nodes: distinctByKey([...data.nodes, ...nodes], "id"),
-        links: [...data.links, ...links],
-      });
+  //     const { nodes, links } = await getLinks(node.id);
 
-      // wait for graph to finish animating + 200ms for safety
-      setTimeout(() => {
-        zoomToLastClicked(node.id);
-      }, 600);
-    },
-    [data, setData]
-  );
+  //     setData({
+  //       nodes: distinctByKey([...data.nodes, ...nodes], "id"),
+  //       links: [...data.links, ...links],
+  //     });
 
-  const nodeCanvasObject = useCallback(
-    (
-      node: NodeObject<Node>,
-      ctx: CanvasRenderingContext2D,
-      globalScale: number
-    ) => {
-      const highlightNode = highlightedNodes.has(node.id);
+  //     // wait for graph to finish animating + 200ms for safety
+  //     setTimeout(() => {
+  //       zoomToLastClicked(node.id);
+  //     }, 600);
+  //   },
+  //   [data, setData]
+  // );
 
-      const label = globalScale < 1 ? "" : node.title;
-      const radius = Math.min(10 / globalScale, 2);
-      const fontSize = 12 / globalScale;
-      const textYOffset = 20 / globalScale; // Offset for text below the circle
+  // const nodeCanvasObject = useCallback(
+  //   (
+  //     node: NodeObject<Node>,
+  //     ctx: CanvasRenderingContext2D,
+  //     globalScale: number
+  //   ) => {
+  //     const highlightNode = highlightedNodes.has(node.id);
 
-      // Draw white outline circle
-      // ctx.beginPath();
-      // ctx.arc(node.x!, node.y!, radius + 0.2, 0, 2 * Math.PI, false);
-      // ctx.fillStyle = "white";
-      // ctx.fill();
+  //     const label = globalScale < 1 ? "" : node.title;
+  //     const radius = Math.min(10 / globalScale, 2);
+  //     const fontSize = 12 / globalScale;
+  //     const textYOffset = 20 / globalScale; // Offset for text below the circle
 
-      // Draw blue circle
-      ctx.beginPath();
-      ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = highlightNode ? "orange" : "#3183ba";
-      ctx.fill();
+  //     // Draw white outline circle
+  //     // ctx.beginPath();
+  //     // ctx.arc(node.x!, node.y!, radius + 0.2, 0, 2 * Math.PI, false);
+  //     // ctx.fillStyle = "white";
+  //     // ctx.fill();
 
-      // Draw text below the circle
-      ctx.font = `${fontSize}px Inter`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.globalAlpha =
-        highlightNode && hoveredNode !== node.id
-          ? 1
-          : Math.min(Math.max(globalScale - 3.5, 0) / 5, 1);
-      ctx.fillStyle = "white";
-      ctx.fillText(label, node.x!, node.y! + textYOffset);
+  //     // Draw blue circle
+  //     ctx.beginPath();
+  //     ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI, false);
+  //     ctx.fillStyle = highlightNode ? "orange" : "#3183ba";
+  //     ctx.fill();
 
-      ctx.globalAlpha = 1;
-    },
-    [highlightedNodes, hoveredNode]
-  );
+  //     // Draw text below the circle
+  //     ctx.font = `${fontSize}px Inter`;
+  //     ctx.textAlign = "center";
+  //     ctx.textBaseline = "top";
+  //     ctx.globalAlpha =
+  //       highlightNode && hoveredNode !== node.id
+  //         ? 1
+  //         : Math.min(Math.max(globalScale - 3.5, 0) / 5, 1);
+  //     ctx.fillStyle = "white";
+  //     ctx.fillText(label, node.x!, node.y! + textYOffset);
 
-  const decideShowParticles = useCallback(
-    (element: LinkObject<Node, Link>) => {
-      const source = element.source as NodeObject<Node>;
-      const target = element.target as NodeObject<Node>;
+  //     ctx.globalAlpha = 1;
+  //   },
+  //   [highlightedNodes, hoveredNode]
+  // );
 
-      const showParticles =
-        source.id === hoveredNode || target.id === hoveredNode;
+  // const decideShowParticles = useCallback(
+  //   (element: LinkObject<Node, Link>) => {
+  //     const source = element.source as NodeObject<Node>;
+  //     const target = element.target as NodeObject<Node>;
 
-      return showParticles ? 2 : 0;
-    },
-    [hoveredNode]
-  );
+  //     const showParticles =
+  //       source.id === hoveredNode || target.id === hoveredNode;
 
-  const decideLineWidth = useCallback(
-    (element: LinkObject<Node, Link>) => {
-      const source = element.source as NodeObject<Node>;
-      const target = element.target as NodeObject<Node>;
+  //     return showParticles ? 2 : 0;
+  //   },
+  //   [hoveredNode]
+  // );
 
-      const largeLine = source.id === hoveredNode || target.id === hoveredNode;
+  // const decideLineWidth = useCallback(
+  //   (element: LinkObject<Node, Link>) => {
+  //     const source = element.source as NodeObject<Node>;
+  //     const target = element.target as NodeObject<Node>;
 
-      return largeLine ? 4 : 1;
-    },
-    [hoveredNode]
-  );
+  //     const largeLine = source.id === hoveredNode || target.id === hoveredNode;
 
-  const decideLineColor = useCallback(
-    (element: LinkObject<Node, Link>) => {
-      const source = element.source as NodeObject<Node>;
-      const target = element.target as NodeObject<Node>;
+  //     return largeLine ? 4 : 1;
+  //   },
+  //   [hoveredNode]
+  // );
 
-      const isHovered = source.id === hoveredNode || target.id === hoveredNode;
+  // const decideLineColor = useCallback(
+  //   (element: LinkObject<Node, Link>) => {
+  //     const source = element.source as NodeObject<Node>;
+  //     const target = element.target as NodeObject<Node>;
 
-      return isHovered ? "#e2e2e242" : "#3f3f3f42";
-    },
-    [hoveredNode]
-  );
+  //     const isHovered = source.id === hoveredNode || target.id === hoveredNode;
 
-  const handleHover = (node: NodeObject<Node> | null) => {
-    setHoveredNode(node?.id || null);
-    const nodesToHighlight = new Set<string>();
+  //     return isHovered ? "#e2e2e242" : "#3f3f3f42";
+  //   },
+  //   [hoveredNode]
+  // );
 
-    // clear highlighted nodes set if no node is hovered
-    if (node === null) {
-      setHighlightedNodes(nodesToHighlight);
-      return;
-    }
+  // const handleHover = (node: NodeObject<Node> | null) => {
+  //   // setHoveredNode(node?.id || null);
+  //   const nodesToHighlight = new Set<string>();
 
-    data.links.forEach((link) => {
-      const source = link.source as unknown as NodeObject<Node>;
-      const target = link.target as unknown as NodeObject<Node>;
+  //   // clear highlighted nodes set if no node is hovered
+  //   if (node === null) {
+  //     setHighlightedNodes(nodesToHighlight);
+  //     return;
+  //   }
 
-      if (target.id === node?.id || source.id === node?.id) {
-        nodesToHighlight.add(target.id);
-        nodesToHighlight.add(source.id);
-      }
-    });
+  //   data.links.forEach((link) => {
+  //     const source = link.source as unknown as NodeObject<Node>;
+  //     const target = link.target as unknown as NodeObject<Node>;
 
-    setHighlightedNodes(nodesToHighlight);
-  };
+  //     if (target.id === node?.id || source.id === node?.id) {
+  //       nodesToHighlight.add(target.id);
+  //       nodesToHighlight.add(source.id);
+  //     }
+  //   });
+
+  //   setHighlightedNodes(nodesToHighlight);
+  // };
 
   const handleInitialZoom = () => {
     if (isNewSearch) {
