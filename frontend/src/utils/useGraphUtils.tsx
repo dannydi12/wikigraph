@@ -122,7 +122,7 @@ const useGraphUtils = (
       console.log("go!", node.x, node.y);
       setZoomTo(node.id)
       // zoomToLastClicked(node.id);
-    }, 600);
+    }, 400);
   };
 
   const nodeCanvasObject = useCallback(
