@@ -4,6 +4,9 @@ import { api } from "../utils/api";
 import { WikiSearch } from "backend/src/wikipedia/wikipedia.type";
 import { WikiSearchDisplay } from "../types/WikipediaSearchTypes";
 import SearchResult from "./SearchResult";
+import { suggestedSearches } from "../utils/constants";
+import { randomSearchRecommendation } from "../utils/randomeSearchRecommendation";
+import { useDebounce } from "usehooks-ts";
 
 type Props = {
   topic: string;
@@ -13,16 +16,20 @@ type Props = {
 const Search: FC<Props> = ({ setTopic, topic }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<WikiSearchDisplay[]>([]);
+  const [placeholderText, setPlaceholderText] = useState(topic || "Deep Dive");
+  const [hasSearchedAtLeastOnce, setHasSearchAtLeastOnce] = useState(false);
+
+  const debouncedQuery = useDebounce(query, 300);
 
   const getWikiSearch = async () => {
-    if (!query) {
+    if (!debouncedQuery) {
       setResults([]);
       return;
     }
 
     const { data } = await api<WikiSearch>({
       url: "/wikipedia",
-      params: { search: query },
+      params: { search: debouncedQuery },
     });
 
     setResults(
@@ -34,8 +41,24 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
   };
 
   useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (!hasSearchedAtLeastOnce) {
+        const suggestion = randomSearchRecommendation(suggestedSearches);
+
+        setPlaceholderText(suggestion);
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [hasSearchedAtLeastOnce]);
+
+  useEffect(() => {
     getWikiSearch();
-  }, [query]);
+  }, [debouncedQuery]);
 
   return (
     <StyledSearch $areResults={!!results.length}>
@@ -43,7 +66,7 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
         className="input-box"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={topic || "Deep Dive"}
+        placeholder={placeholderText}
       />
 
       <div className="results">
@@ -51,7 +74,12 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
           <SearchResult
             key={result.title}
             result={result}
-            onClick={() => setTopic(result.title.toLowerCase())}
+            onClick={() => {
+              setHasSearchAtLeastOnce(true);
+              setTopic(result.title.toLowerCase());
+              setQuery("");
+              setPlaceholderText(result.title);
+            }}
           />
         ))}
       </div>

@@ -2,15 +2,22 @@ import { styled } from "styled-components";
 
 export const StyledSearchResult = styled.div`
   background-color: #404040;
+  transition: background-color linear 300ms;
   border: 1px solid #6e6e6e;
   border-top-width: 0;
 
   padding: 10px 20px;
 
+  cursor: pointer;
+
+  &:hover {
+    background-color: #353535;
+  }
+
   .title {
-    color: #3183ba;
-    font-size: 22px;
-    font-weight: 600;
+    color: #229ced;
+    font-size: 16px;
+    font-weight: 500;
   }
 
   .snippet {
@@ -28,5 +35,12 @@ export const StyledSearchResult = styled.div`
   &:last-child {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+  }
+
+  @media (min-width: 800px) {
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+    }
   }
 `;

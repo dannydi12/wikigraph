@@ -4,9 +4,13 @@ import { api } from "./utils/api";
 import { APIResponse, Data } from "./types/GraphTypes";
 import Graph from "./Graph/Graph";
 import Search from "./Search/Search";
+import { randomSearchRecommendation } from "./utils/randomeSearchRecommendation";
+import { searchableSuggestions } from "./utils/constants";
 
 const App: FC = () => {
-  const [topic, setTopic] = useState("jesus");
+  const [topic, setTopic] = useState(
+    randomSearchRecommendation(searchableSuggestions)
+  );
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
 
   const getLinks = async (title: string) => {

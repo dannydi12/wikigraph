@@ -20,6 +20,11 @@ export const StyledSearch = styled.div<{ $areResults: boolean }>`
     background-color: #404040;
     border: 1px solid #6e6e6e;
     transition: border-color linear 500ms;
+    transition: background-color linear 300ms;
+
+    &:hover {
+      background-color: #353535;
+    }
 
     ${({ $areResults }) =>
       $areResults &&
