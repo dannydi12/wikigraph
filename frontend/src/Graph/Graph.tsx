@@ -22,12 +22,21 @@ const Graph: FC<Props> = ({ graphData, getLinks, setData: sadfsd, topic }) => {
     useRef<ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>>();
   const [show3d, setShow3d] = useState(false);
   const [isNewSearch, setIsNewSearch] = useState(true);
-  
-  const data = useMemo(() => {
-    return {
-      nodes: graphData.nodes.map((node) => Object.assign({}, node)),
-      links: graphData.links.map((link) => Object.assign({}, link)),
-    };
+  const [data, setData] = useState<Data>({nodes: [], links: []})
+
+  useEffect(() => {
+    if (isNewSearch) {
+      setData({
+        nodes: graphData.nodes.map((node) => Object.assign({}, node)),
+        links: graphData.links.map((link) => Object.assign({}, link)),
+      });
+      return
+    }
+
+    setData({
+      nodes: [...data.nodes, ...graphData.nodes.slice(data.nodes.length - 1).map((node) => Object.assign({}, node))],
+      links: [...data.links, ...graphData.links.slice(data.links.length - 1).map((link) => Object.assign({}, link))],
+    });
   }, [graphData.nodes.length, graphData.links.length]);
 
   const {
