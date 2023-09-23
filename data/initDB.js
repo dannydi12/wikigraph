@@ -1,21 +1,10 @@
-const sqlite3 = require("sqlite3");
+const Database = require("better-sqlite3");
 
-const db = new sqlite3.Database("wiki.db");
+const db = new Database("wiki2.db");
 
 const initDB = async () => {
-  await new Promise((resolve) => {
-    db.serialize(() => {
-      db.run("BEGIN TRANSACTION;");
-      db.run(
-        `
-      CREATE TABLE IF NOT EXISTS pages (
-        title_id TEXT PRIMARY KEY,
-        title TEXT
-      );
+  db.prepare(
     `
-      );
-      db.run(
-        `
       CREATE TABLE IF NOT EXISTS links (
         from_title_id TEXT,
         to_title_id TEXT,
@@ -26,16 +15,7 @@ const initDB = async () => {
         UNIQUE (from_title_id, to_title_id) ON CONFLICT REPLACE
     );
     `
-      );
-      db.run("COMMIT;", resolve);
-    });
-  });
-
-  return;
+  ).run();
 };
 
-const main = async () => {
-  await initDB();
-};
-
-main();
+initDB();
