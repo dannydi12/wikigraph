@@ -10,16 +10,16 @@ import useGraphUtils from "../utils/useGraphUtils";
 import { setIsNewSearch, useAppDispatch, useAppSelector } from "../redux";
 
 type Props = {
-  graphData: Data;
+  
 };
 
 type GraphElement = ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>;
 
-const Graph: FC<Props> = ({ graphData }) => {
+const Graph: FC<Props> = () => {
   const ref = useRef<GraphElement>();
   const dispatch = useAppDispatch();
 
-  const isNewSearch = useAppSelector((state) => state.graph.isNewSearch);
+  const { isNewSearch, nodes, links } = useAppSelector((state) => state.graph);
 
   const [show3d, setShow3d] = useState(false);
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
@@ -27,8 +27,8 @@ const Graph: FC<Props> = ({ graphData }) => {
   useEffect(() => {
     if (isNewSearch) {
       setData({
-        nodes: graphData.nodes.map((node) => Object.assign({}, node)),
-        links: graphData.links.map((link) => Object.assign({}, link)),
+        nodes:nodes.map((node) => Object.assign({}, node)),
+        links: links.map((link) => Object.assign({}, link)),
       });
       return;
     }
@@ -36,18 +36,18 @@ const Graph: FC<Props> = ({ graphData }) => {
     setData({
       nodes: [
         ...data.nodes,
-        ...graphData.nodes
+        ...nodes
           .slice(data.nodes.length - 1)
           .map((node) => Object.assign({}, node)),
       ],
       links: [
         ...data.links,
-        ...graphData.links
+        ...links
           .slice(data.links.length - 1)
           .map((link) => Object.assign({}, link)),
       ],
     });
-  }, [graphData.nodes.length, graphData.links.length]);
+  }, [nodes.length, links.length]);
 
   const {
     handleHover,

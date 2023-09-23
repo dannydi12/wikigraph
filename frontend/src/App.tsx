@@ -6,9 +6,7 @@ import { useAppSelector } from "./redux";
 import useGetLinks from "./utils/getLinks";
 
 const App: FC = () => {
-  const { currentSearch, nodes, links } = useAppSelector(
-    (state) => state.graph
-  );
+  const currentSearch = useAppSelector((state) => state.graph.currentSearch);
 
   const { searchLinks } = useGetLinks();
 
@@ -19,7 +17,7 @@ const App: FC = () => {
   return (
     <StyledApp>
       <Search />
-      <Graph graphData={{ links, nodes }} />
+      <Graph />
     </StyledApp>
   );
 };

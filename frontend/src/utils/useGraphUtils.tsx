@@ -75,7 +75,7 @@ const useGraphUtils = (
     // wait for graph to finish animating + 200ms for safety
     setTimeout(() => {
       zoomToLastClicked(node.id);
-    }, 1000);
+    }, 600);
   };
 
   const nodeCanvasObject = useCallback(
