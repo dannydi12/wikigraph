@@ -98,7 +98,6 @@ parser.on("closetag", (tag) => {
 
     // statistics
     count++;
-    console.log("Completed #" + count);
   }
 });
 
