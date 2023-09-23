@@ -34,12 +34,12 @@ const Search: FC = () => {
         params: { search: debouncedQuery },
       });
 
-      setResults(
-        data.query.search.map((search) => ({
-          title: search.title,
-          snippet: search.snippet,
-        }))
-      );
+      const searchResults = data.query.search.map((search) => ({
+        title: search.title,
+        snippet: search.snippet,
+      }));
+
+      setResults(searchResults);
     } catch (err) {
       console.log(err);
     }
