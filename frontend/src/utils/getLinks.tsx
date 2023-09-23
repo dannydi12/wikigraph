@@ -1,6 +1,7 @@
 import {
   addGraphData,
   setGraphData,
+  setIsNewSearch,
   useAppDispatch,
   useAppSelector,
 } from "../redux";
@@ -42,6 +43,7 @@ const useGetLinks = () => {
 
       if (type === "set") {
         dispatch(setGraphData({ nodes: newNodes, links: newLinks }));
+        dispatch(setIsNewSearch(true));
       }
 
       if (type === "add") {

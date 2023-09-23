@@ -13,12 +13,12 @@ type Props = {
   graphData: Data;
 };
 
-const Graph: FC<Props> = ({ graphData }) => {
-  const dispatch = useAppDispatch();
-  const ref =
-    useRef<ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>>();
+type GraphElement = ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>;
 
-  const currentSearch = useAppSelector((state) => state.graph.currentSearch);
+const Graph: FC<Props> = ({ graphData }) => {
+  const ref = useRef<GraphElement>();
+  const dispatch = useAppDispatch();
+
   const isNewSearch = useAppSelector((state) => state.graph.isNewSearch);
 
   const [show3d, setShow3d] = useState(false);
@@ -65,10 +65,6 @@ const Graph: FC<Props> = ({ graphData }) => {
     }
   };
 
-  useEffect(() => {
-    dispatch(setIsNewSearch(true));
-  }, [currentSearch]);
-
   if (show3d) {
     return (
       <ForceGraph3d
@@ -90,7 +86,7 @@ const Graph: FC<Props> = ({ graphData }) => {
       enableNodeDrag={false}
       onNodeClick={handleClick}
       graphData={data}
-      // cooldownTime={400}
+      cooldownTime={400}
       nodeLabel={(n) => n.title}
       linkColor={decideLineColor}
       linkDirectionalParticleColor={() => "white"}
