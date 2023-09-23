@@ -13,14 +13,12 @@ const Search: FC = () => {
   const dispatch = useAppDispatch();
   const currentSearch = useAppSelector((state) => state.graph.currentSearch);
 
-  const [query, setQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [results, setResults] = useState<WikiSearchDisplay[]>([]);
-  const [placeholderText, setPlaceholderText] = useState(
-    currentSearch || "Deep Dive"
-  );
+  const [placeholderText, setPlaceholderText] = useState(currentSearch);
   const [hasSearchedAtLeastOnce, setHasSearchAtLeastOnce] = useState(false);
 
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebounce(searchInputValue, 300);
 
   const getWikiSearch = async () => {
     try {
@@ -69,8 +67,8 @@ const Search: FC = () => {
     <StyledSearch $areResults={!!results.length}>
       <input
         className="input-box"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={searchInputValue}
+        onChange={(e) => setSearchInputValue(e.target.value)}
         placeholder={placeholderText}
       />
 
@@ -82,7 +80,7 @@ const Search: FC = () => {
             onClick={() => {
               setHasSearchAtLeastOnce(true);
               dispatch(setCurrentSearch(result.title.toLowerCase()));
-              setQuery("");
+              setSearchInputValue("");
               setPlaceholderText(result.title);
             }}
           />
