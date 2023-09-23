@@ -4,6 +4,7 @@ import Graph from "./Graph/Graph";
 import Search from "./Search/Search";
 import { useAppSelector } from "./redux";
 import useGetLinks from "./utils/getLinks";
+import Footer from "./Footer/Footer";
 
 const App: FC = () => {
   const currentSearch = useAppSelector((state) => state.graph.currentSearch);
@@ -18,6 +19,7 @@ const App: FC = () => {
     <StyledApp>
       <Search />
       <Graph />
+      <Footer />
     </StyledApp>
   );
 };
