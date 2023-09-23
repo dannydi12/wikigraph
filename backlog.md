@@ -1,0 +1,5 @@
+- [ ] Command + F to search all nodes and highlight them
+- [ ] Command + Click on a search result to __add__ it to the graph instead of replacing it
+- [ ] 3D toggle?
+- [ ] Ability to export graph as image
+- [ ] Hackerman mode: just keep expanding the graph on autopilot because it'll look like a 90's hacker movie

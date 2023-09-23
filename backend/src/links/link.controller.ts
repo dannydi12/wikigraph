@@ -6,6 +6,7 @@ export const getLinks = async (req: Request, res: Response, next: NextFunction) 
   try {
     const { pageTitleId } = req.params
 
+    // TODO: consider also getting all links TO the article
     const links = db
       .prepare<string>('SELECT * FROM links WHERE from_title_id = ?')
       .all(pageTitleId) as Link[]
