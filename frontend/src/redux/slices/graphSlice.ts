@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Data, Link, Node } from "../../types/GraphTypes";
 import { distinctByKey } from "../../utils/distinctByKey";
+import { randomSearchRecommendation } from "../../utils/randomeSearchRecommendation";
+import { searchableSuggestions } from "../../utils/constants";
 
 type InitialState = {
   loading: boolean;
@@ -8,6 +10,8 @@ type InitialState = {
   links: Link[];
   hoveredNodeId: string | null;
   highlightedNodes: { [x: string]: boolean };
+  isNewSearch: boolean;
+  currentSearch: string;
 };
 
 const initialState: InitialState = {
@@ -16,6 +20,8 @@ const initialState: InitialState = {
   links: [],
   hoveredNodeId: null,
   highlightedNodes: {},
+  isNewSearch: true,
+  currentSearch: randomSearchRecommendation(searchableSuggestions),
 };
 
 export const graphSlice = createSlice({
@@ -45,6 +51,12 @@ export const graphSlice = createSlice({
     ) => {
       state.highlightedNodes = action.payload;
     },
+    setIsNewSearch: (state, action: PayloadAction<boolean>) => {
+      state.isNewSearch = action.payload;
+    },
+    setCurrentSearch: (state, action: PayloadAction<string>) => {
+      state.currentSearch = action.payload;
+    },
   },
 });
 
@@ -53,5 +65,7 @@ export const {
   setHoveredNode,
   addHighlightedNodes,
   addGraphData,
+  setIsNewSearch,
+  setCurrentSearch,
 } = graphSlice.actions;
 export default graphSlice.reducer;

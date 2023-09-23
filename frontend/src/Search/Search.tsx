@@ -7,37 +7,42 @@ import SearchResult from "./SearchResult";
 import { suggestedSearches } from "../utils/constants";
 import { randomSearchRecommendation } from "../utils/randomeSearchRecommendation";
 import { useDebounce } from "usehooks-ts";
+import { setCurrentSearch, useAppDispatch, useAppSelector } from "../redux";
 
-type Props = {
-  topic: string;
-  setTopic: (v: string) => void;
-};
+const Search: FC = () => {
+  const dispatch = useAppDispatch();
+  const currentSearch = useAppSelector((state) => state.graph.currentSearch);
 
-const Search: FC<Props> = ({ setTopic, topic }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<WikiSearchDisplay[]>([]);
-  const [placeholderText, setPlaceholderText] = useState(topic || "Deep Dive");
+  const [placeholderText, setPlaceholderText] = useState(
+    currentSearch || "Deep Dive"
+  );
   const [hasSearchedAtLeastOnce, setHasSearchAtLeastOnce] = useState(false);
 
   const debouncedQuery = useDebounce(query, 300);
 
   const getWikiSearch = async () => {
-    if (!debouncedQuery) {
-      setResults([]);
-      return;
+    try {
+      if (!debouncedQuery) {
+        setResults([]);
+        return;
+      }
+
+      const { data } = await api<WikiSearch>({
+        url: "/wikipedia",
+        params: { search: debouncedQuery },
+      });
+
+      setResults(
+        data.query.search.map((search) => ({
+          title: search.title,
+          snippet: search.snippet,
+        }))
+      );
+    } catch (err) {
+      console.log(err);
     }
-
-    const { data } = await api<WikiSearch>({
-      url: "/wikipedia",
-      params: { search: debouncedQuery },
-    });
-
-    setResults(
-      data.query.search.map((search) => ({
-        title: search.title,
-        snippet: search.snippet,
-      }))
-    );
   };
 
   useEffect(() => {
@@ -76,7 +81,7 @@ const Search: FC<Props> = ({ setTopic, topic }) => {
             result={result}
             onClick={() => {
               setHasSearchAtLeastOnce(true);
-              setTopic(result.title.toLowerCase());
+              dispatch(setCurrentSearch(result.title.toLowerCase()));
               setQuery("");
               setPlaceholderText(result.title);
             }}

@@ -4,17 +4,14 @@ import {
   NodeObject,
 } from "react-force-graph-2d";
 import {
-  addGraphData,
   addHighlightedNodes,
-  setGraphData,
   setHoveredNode,
   useAppDispatch,
   useAppSelector,
 } from "../redux";
-import { APIResponse, Data, Link, Node } from "../types/GraphTypes";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { distinctByKey } from "./distinctByKey";
-import { api } from "./api";
+import { Link, Node } from "../types/GraphTypes";
+import { useCallback} from "react";
+import useGetLinks from "./getLinks";
 
 const useGraphUtils = (
   ref: ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>> | undefined,
@@ -23,43 +20,15 @@ const useGraphUtils = (
   const dispatch = useAppDispatch();
   const {
     links,
-    nodes,
     hoveredNodeId: hoveredNode,
     highlightedNodes,
   } = useAppSelector((state) => state.graph);
 
-  const [zoomTo, setZoomTo] = useState('')
-
-  // needs to be replaced
-  const getLinks = async (title: string) => {
-    const { data } = await api<APIResponse>({
-      url: `/links/${encodeURIComponent(title)}`,
-      method: "GET",
-    });
-
-    const newLinks = data.map((d) => ({
-      source: d.from_title_id,
-      target: d.to_title_id,
-    }));
-    const newNodes = data.map((d) => ({
-      id: d.to_title_id,
-      title: d.to_title,
-    }));
-
-    // add missing root node
-    // if (!newNodes.some((node) => node.id === topic)) {
-    //   newNodes.push({
-    //     id: topic,
-    //     title: topic,
-    //   });
-    // }
-
-    return { nodes: newNodes, links: newLinks };
-  };
+  const { searchLinks } = useGetLinks();
 
   const handleHover = (node: NodeObject<Node> | null) => {
     dispatch(setHoveredNode(node?.id || null));
-    const nodesToHighlight: any = {};
+    const nodesToHighlight: {[x: string]: boolean} = {};
 
     // clear highlighted nodes set if no node is hovered
     if (node === null) {
@@ -82,7 +51,7 @@ const useGraphUtils = (
 
   const zoomToLastClicked = (nodeId: string) => {
     const node = graphNodes.find((node) => node.id === nodeId);
-    console.log("node", node?.id, node?.x, node?.y);
+
     if (!node) {
       return;
     }
@@ -90,13 +59,6 @@ const useGraphUtils = (
     // keeps last clicked node in the center of the page
     ref?.centerAt(node.x!, node.y!, 400);
   };
-
-  useEffect(() => {
-    if(zoomTo) {
-      zoomToLastClicked(zoomTo)
-      setZoomTo('')
-    }
-  }, [zoomTo])
 
   const handleClick = async (node: NodeObject<Node>, event: MouseEvent) => {
     // open wikipedia page if holding command or control keys
@@ -108,21 +70,12 @@ const useGraphUtils = (
       return;
     }
 
-    const { nodes: newNodes, links: newLinks } = await getLinks(node.id);
-
-    dispatch(
-      addGraphData({
-        nodes: newNodes,
-        links: newLinks,
-      })
-    );
+    await searchLinks({ title: node.id, type: "add" });
 
     // wait for graph to finish animating + 200ms for safety
     setTimeout(() => {
-      console.log("go!", node.x, node.y);
-      setZoomTo(node.id)
-      // zoomToLastClicked(node.id);
-    }, 400);
+      zoomToLastClicked(node.id);
+    }, 1000);
   };
 
   const nodeCanvasObject = useCallback(
@@ -132,17 +85,10 @@ const useGraphUtils = (
       globalScale: number
     ) => {
       const highlightNode = highlightedNodes[node.id];
-      // console.log('high', highlightNode)
       const label = globalScale < 1 ? "" : node.title;
       const radius = Math.min(10 / globalScale, 2);
       const fontSize = 12 / globalScale;
       const textYOffset = 20 / globalScale; // Offset for text below the circle
-
-      // Draw white outline circle
-      // ctx.beginPath();
-      // ctx.arc(node.x!, node.y!, radius + 0.2, 0, 2 * Math.PI, false);
-      // ctx.fillStyle = "white";
-      // ctx.fill();
 
       // Draw blue circle
       ctx.beginPath();
