@@ -7,17 +7,15 @@ import ForceGraph2d, {
 import ForceGraph3d from "react-force-graph-3d";
 import { Data, Link, Node } from "../types/GraphTypes";
 import useGraphUtils from "../utils/useGraphUtils";
-import { setIsNewSearch, useAppDispatch, useAppSelector } from "../redux";
+import { useAppSelector } from "../redux";
+import useGraphStyling from "../utils/useGraphStyling";
 
-type Props = {
-  
-};
+type Props = {};
 
 type GraphElement = ForceGraphMethods<NodeObject<Node>, LinkObject<Node, Link>>;
 
 const Graph: FC<Props> = () => {
   const ref = useRef<GraphElement>();
-  const dispatch = useAppDispatch();
 
   const { isNewSearch, nodes, links } = useAppSelector((state) => state.graph);
 
@@ -27,7 +25,7 @@ const Graph: FC<Props> = () => {
   useEffect(() => {
     if (isNewSearch) {
       setData({
-        nodes:nodes.map((node) => Object.assign({}, node)),
+        nodes: nodes.map((node) => Object.assign({}, node)),
         links: links.map((link) => Object.assign({}, link)),
       });
       return;
@@ -37,33 +35,29 @@ const Graph: FC<Props> = () => {
       nodes: [
         ...data.nodes,
         ...nodes
-          .slice(data.nodes.length - 1)
+          .slice(data.nodes.length)
           .map((node) => Object.assign({}, node)),
       ],
       links: [
         ...data.links,
         ...links
-          .slice(data.links.length - 1)
+          .slice(data.links.length)
           .map((link) => Object.assign({}, link)),
       ],
     });
   }, [nodes.length, links.length]);
 
+  const { handleHover, handleClick, handleInitialZoom } = useGraphUtils(
+    ref.current,
+    data.nodes
+  );
+
   const {
-    handleHover,
     decideLineColor,
     decideLineWidth,
     decideShowParticles,
-    handleClick,
     nodeCanvasObject,
-  } = useGraphUtils(ref.current, data.nodes);
-
-  const handleInitialZoom = () => {
-    if (isNewSearch) {
-      ref.current?.zoomToFit(1000, 100);
-      dispatch(setIsNewSearch(false));
-    }
-  };
+  } = useGraphStyling();
 
   if (show3d) {
     return (
