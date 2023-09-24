@@ -6,6 +6,7 @@
 - Then run `yarn db:csv` to convert the XML to CSV
 - Then run `yarn db:init` to build the database file
 - Then  run `sqlite3 wiki.db`
+  - `.output db.log` so that the terminal output does not hog memory
   - `.import links.csv links`
   - run `CREATE INDEX idx_from_title ON links (from_title);`
 - Go to the `backend` folder
