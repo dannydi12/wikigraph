@@ -12,4 +12,6 @@
 - Go to the `backend` folder
   - Add an `.env` file with a your DB's file path as the value for `DB_FILE`
   - Run `yarn watch` to start the server
-- Go to the `frontend` folder and run `yarn dev` to start the website
+- Go to the `frontend` folder
+  - Create a `.env.local` file with the following: `VITE_API_URL=http://localhost:8000/api`
+  - Run `yarn dev` to start the website
