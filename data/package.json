@@ -1,16 +1,17 @@
 {
-  "name": "trial",
+  "name": "data",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:init": "node ./initDB",
+    "db:csv": "node ./xml2csv"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sax": "^1.2.4",
-    "sqlite3": "^5.1.6"
+    "better-sqlite3": "^8.6.0",
+    "sax": "^1.2.4"
   }
 }

@@ -1,19 +1,16 @@
 const fs = require("fs");
 const sax = require("sax");
 
-// Replace 'input.xml' and 'output.csv' with your file paths
-const xmlFilePath =
-  "/Volumes/The Other One/enwiki-20230820-pages-articles-multistream.xml";
+// REPLACE WITH YOUR XML FILE PATH
+const WIKIPEDIA_XML_DUMP_FILE = "wiki.xml";
 
 const parser = sax.createStream(true, { trim: true, strictEntities: true });
 const links = fs.createWriteStream("links.csv");
-const pages = fs.createWriteStream("pages.csv");
 
 const start = new Date().valueOf();
 
 // setup headers
-pages.write("title_id,title");
-links.write("from_title_id,to_title_id,to_title");
+links.write("from_title,to_title");
 
 let currentElement = {};
 let currentKey = "";
@@ -56,15 +53,14 @@ parser.on("text", (text) => {
   }
 });
 
-
 /**
  *
  * @param {string} field
  * @returns {string}
  */
 function escapeCSVField(field) {
-  if(!field) {
-    return ""
+  if (!field) {
+    return "";
   }
 
   // If the field contains double quotes, double them up
@@ -82,22 +78,23 @@ function escapeCSVField(field) {
 
 parser.on("closetag", (tag) => {
   if (tag === "page") {
-    const titleId = escapeCSVField(currentElement.title).toLowerCase();
-    const formattedTitle = escapeCSVField(currentElement.title);
-    pages.write(`\n${titleId},${formattedTitle}`);
+    const fromTitle = escapeCSVField(currentElement.title);
 
     if (currentElement.linksTo) {
       for (const link of currentElement.linksTo) {
-        const toTitleId = escapeCSVField(link.toLowerCase())
-        const toTitleFormatted = escapeCSVField(link)
-        links.write(`\n${titleId},${toTitleId},${toTitleFormatted}`);
+        const toTitle = escapeCSVField(link);
+        links.write(`\n${fromTitle},${toTitle}`);
       }
     }
 
     currentElement = {};
 
-    // statistics
     count++;
+
+    // statistics
+    if (count % 1000 === 0) {
+      console.log(`Processed ${count} documents`);
+    }
   }
 });
 
@@ -105,10 +102,13 @@ parser.on("end", () => {
   // statistics
   const end = new Date().valueOf();
   const timePassed = end - start;
-  console.log("Done in" + new Date(timePassed).getMinutes());
+  console.log(
+    `Processed ${count} documents in ${new Date(
+      timePassed
+    ).getMinutes()} minutes.`
+  );
 
-  pages.close();
   links.close();
 });
 
-fs.createReadStream(xmlFilePath).pipe(parser);
+fs.createReadStream(WIKIPEDIA_XML_DUMP_FILE).pipe(parser);
