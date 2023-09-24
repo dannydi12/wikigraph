@@ -7,7 +7,7 @@
 - Then run `yarn db:init` to build the database file
 - Then  run `sqlite3 wiki.db`
   - `.import links.csv links`
-  - run `CREATE INDEX idx_from_title_id ON links (from_title_id);`
+  - run `CREATE INDEX idx_from_title ON links (from_title);`
 - Go to the `backend` folder
   - Add an `.env` file with a your DB's file path as the value for `DB_FILE`
   - Run `yarn watch` to start the server
