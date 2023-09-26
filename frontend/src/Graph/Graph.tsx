@@ -20,7 +20,7 @@ const Graph: FC<Props> = () => {
   const { isNewSearch, nodes, links } = useAppSelector((state) => state.graph);
 
   // TODO: add ability to toggle 3D views
-  const [show3d, setShow3d] = useState(false);
+  const [show3d, _setShow3d] = useState(false);
   const [data, setData] = useState<Data>({ nodes: [], links: [] });
 
   useEffect(() => {
