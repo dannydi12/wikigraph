@@ -7,10 +7,8 @@ const WIKIPEDIA_XML_DUMP_FILE = "wiki.xml";
 const parser = sax.createStream(true, { trim: true, strictEntities: true });
 const links = fs.createWriteStream("links.csv");
 
-const start = new Date().valueOf();
-
 // setup headers
-links.write("from_title,to_title");
+links.write("from_title_id,to_title_id,to_title");
 
 let currentElement = {};
 let currentKey = "";
@@ -78,12 +76,15 @@ function escapeCSVField(field) {
 
 parser.on("closetag", (tag) => {
   if (tag === "page") {
-    const fromTitle = escapeCSVField(currentElement.title);
+    const titleId = escapeCSVField(currentElement.title).toLowerCase();
+    const formattedTitle = escapeCSVField(currentElement.title);
+    pages.write(`\n${titleId},${formattedTitle}`);
 
     if (currentElement.linksTo) {
       for (const link of currentElement.linksTo) {
-        const toTitle = escapeCSVField(link);
-        links.write(`\n${fromTitle},${toTitle}`);
+        const toTitleId = escapeCSVField(link.toLowerCase())
+        const toTitleFormatted = escapeCSVField(link)
+        links.write(`\n${titleId},${toTitleId},${toTitleFormatted}`);
       }
     }
 
@@ -99,15 +100,7 @@ parser.on("closetag", (tag) => {
 });
 
 parser.on("end", () => {
-  // statistics
-  const end = new Date().valueOf();
-  const timePassed = end - start;
-  console.log(
-    `Processed ${count} documents in ${new Date(
-      timePassed
-    ).getMinutes()} minutes.`
-  );
-
+  pages.close();
   links.close();
 });
 
