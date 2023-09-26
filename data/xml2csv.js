@@ -77,8 +77,6 @@ function escapeCSVField(field) {
 parser.on("closetag", (tag) => {
   if (tag === "page") {
     const titleId = escapeCSVField(currentElement.title).toLowerCase();
-    const formattedTitle = escapeCSVField(currentElement.title);
-    pages.write(`\n${titleId},${formattedTitle}`);
 
     if (currentElement.linksTo) {
       for (const link of currentElement.linksTo) {
@@ -100,7 +98,6 @@ parser.on("closetag", (tag) => {
 });
 
 parser.on("end", () => {
-  pages.close();
   links.close();
 });
 
