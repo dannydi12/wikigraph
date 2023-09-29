@@ -9,7 +9,6 @@ const initDB = async () => {
         from_title_id TEXT,
         to_title_id TEXT,
         to_title TEXT,
-        link_id INTEGER PRIMARY KEY AUTOINCREMENT,
         UNIQUE (from_title_id, to_title_id) ON CONFLICT REPLACE
     );
     `
