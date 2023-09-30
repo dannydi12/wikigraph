@@ -3,16 +3,16 @@
   "version": "1.0.0",
   "main": "build/index.js",
   "scripts": {
-    "start": "dotenv node build/index.js",
-    "watch": "dotenv nodemon ./src/index.ts",
-    "build": "dotenv tsc"
+    "start": "node build/index.js",
+    "watch": "nodemon ./src/index.ts",
+    "build": "tsc"
   },
   "license": "MIT",
   "dependencies": {
     "axios": "^1.1.2",
     "better-sqlite3": "^8.6.0",
     "cors": "^2.8.5",
-    "dotenv-cli": "^5.1.0",
+    "dotenv": "^16.3.1",
     "express": "^4.17.1",
     "helmet": "^6.0.0",
     "morgan": "^1.10.0"
