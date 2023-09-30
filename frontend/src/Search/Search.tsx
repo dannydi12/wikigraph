@@ -78,6 +78,10 @@ const Search: FC = () => {
             key={result.title}
             result={result}
             onClick={() => {
+              window.gtag('event', 'search', {
+                'title': result.title
+              });
+
               setHasSearchAtLeastOnce(true);
               dispatch(setCurrentSearch(result.title.toLowerCase()));
               setSearchInputValue("");

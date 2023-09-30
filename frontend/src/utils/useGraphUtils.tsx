@@ -64,8 +64,15 @@ const useGraphUtils = (
   };
 
   const handleClick = async (node: NodeObject<Node>, event: MouseEvent) => {
+    const openWikipedia = event.metaKey || event.ctrlKey
+
+    window.gtag('event', 'node_click', {
+      'open_wikipedia': openWikipedia,
+      'title': node.title.split(" ").join("_")
+    });
+
     // open wikipedia page if holding command or control keys
-    if (event.metaKey || event.ctrlKey) {
+    if (openWikipedia) {
       window.open(
         "https://wikipedia.com/wiki/" + node.title.split(" ").join("_"),
         "__blank"
