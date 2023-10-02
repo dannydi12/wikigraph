@@ -8,7 +8,18 @@ export const StyledFooter = styled.footer`
   background-color: #404040;
   padding: 5px 0;
 
-  p {
+  .instructions {
+    position: absolute;
+    bottom: 42px;
+    width: 100%;
+    padding: 0 15px;
+    text-align: center;
+
+    font-size: 10px;
+    color: #555555;
+  }
+
+  .footer-text {
     text-align: center;
     color: white;
     font-weight: 500;
@@ -21,6 +32,12 @@ export const StyledFooter = styled.footer`
 
     &:hover {
       text-decoration: underline;
+    }
+  }
+
+  @media (min-width: 800px) {
+    .instructions {
+      font-size: 14px;
     }
   }
 `;
