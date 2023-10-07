@@ -30,7 +30,7 @@ export const StyledSearch = styled.div<{ $areResults: boolean }>`
 
     input {
       padding-left: 12px;
-      background-color: #404040;
+      background-color: transparent;
       border: none;
       border-radius: 10px;
       transition: background-color linear 300ms;
@@ -40,10 +40,6 @@ export const StyledSearch = styled.div<{ $areResults: boolean }>`
 
       &:focus {
         outline: none;
-      }
-
-      &:hover {
-        background-color: #353535;
       }
     }
 
