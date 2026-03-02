@@ -8,6 +8,9 @@ export const searchWikipedia = async (req: Request, res: Response, next: NextFun
 
     const { data } = await axios<WikiSearch>({
       url: "https://en.wikipedia.org/w/api.php",
+      headers: {
+        "User-Agent": "WikiGraph/1.0 (https://wiki-api.danthebuilder.com; wikigraph@danthebuilder.com)",
+      },
       params: {
         action: "query",
         format: "json",
